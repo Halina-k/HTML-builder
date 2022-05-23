@@ -19,24 +19,27 @@ const destDir = path.resolve(__dirname, 'project-dist');
       chunk = chunk.toString();
       let regexp = /{{(.*?)}}/g;
       const found = [...chunk.matchAll(regexp)];
- 
+
+
       for (const item of found) {
- 
-        const itemReader = fs.createReadStream(path.join(__dirname, 'components', `${item[1]}.html`), 'utf-8');
- 
-        let itemChunks = '';
-        for await (const itemChunk of itemReader) {
-          itemChunks += itemChunk;
+        try {
+          const itemReader = fs.createReadStream(path.join(__dirname, 'components', `${item[1]}.html`), 'utf-8');
+          let itemChunks = '';
+          for await (const itemChunk of itemReader) {
+            itemChunks += itemChunk;
+          }
+          chunk = chunk.replace(item[0], itemChunks);
         }
- 
-        chunk = chunk.replace(item[0], itemChunks);
+
+        catch (error) {
+          console.log(`Модуль ${item[1]}.html не найден в папке components`);
+        }
       }
- 
       callback(null, chunk);
     },
   });
  
-  await reader.pipe(replacePlaceholder).pipe(writer);
+  reader.pipe(replacePlaceholder).pipe(writer);
  
 })();
 
@@ -63,11 +66,7 @@ fs.readdir(path.resolve(__dirname, 'styles'), {withFileTypes: true}, (err, files
 // копирование assets
 
 (async () => {
-  await fs.promises.rmdir(path.resolve(__dirname, 'project-dist', 'assets'), { recursive: true }, function(err){
-    if (err) {
-      console.log(err);
-    }
-  });
+  await fs.promises.rmdir(path.resolve(__dirname, 'project-dist', 'assets'), { recursive: true });
   checkCopying ('assets', 'project-dist/assets');
 })();
 

@@ -4,7 +4,6 @@ const { Transform } = require ('stream');
 
 
 // создание html
-
 const destDir = path.resolve(__dirname, 'project-dist');
 
 (async () => {
@@ -46,7 +45,7 @@ const destDir = path.resolve(__dirname, 'project-dist');
 
 // сборка стилей
 
-const outputStream = fs.createWriteStream(path.resolve(__dirname, 'project-dist', 'style.css'));
+const outputStream = fs.createWriteStream(path.resolve(destDir, 'style.css'));
 fs.readdir(path.resolve(__dirname, 'styles'), {withFileTypes: true}, (err, files) => {
   if (err) {
     console.log(err);
@@ -66,32 +65,27 @@ fs.readdir(path.resolve(__dirname, 'styles'), {withFileTypes: true}, (err, files
 // копирование assets
 
 (async () => {
-  await fs.promises.rmdir(path.resolve(__dirname, 'project-dist', 'assets'), { recursive: true });
+  await fs.promises.rm(path.resolve(destDir, 'assets'), { recursive: true, force: true });
   checkCopying ('assets', 'project-dist/assets');
 })();
 
-function checkCopying (initial, resulting) {
+async function checkCopying (fromDir, toDir) {
 
-  fs.mkdir(path.resolve(__dirname, resulting), { recursive: true }, (err) => {
-    if (err) {
-      console.error(err);
-    }
-  });
+  await fs.promises.mkdir(path.resolve(__dirname, toDir), { recursive: true });
 
-  fs.readdir(path.resolve(__dirname, initial), {withFileTypes: true}, (err, files) => {
+  fs.readdir(path.resolve(__dirname, fromDir), {withFileTypes: true}, (err, files) => {
     if (err)
       console.log(err);
     else {
-
       files.forEach(file => {  
         if (!file.isDirectory()) {
-          fs.copyFile(path.resolve(__dirname, initial, file.name), path.resolve(__dirname, resulting, file.name), (err) => {
+          fs.copyFile(path.resolve(__dirname, fromDir, file.name), path.resolve(__dirname, toDir, file.name), (err) => {
             if (err) {
               console.error(err);
             }
           });
         } else {
-          checkCopying (`${initial}/${file.name}`, `${resulting}/${file.name}`);
+          checkCopying (`${fromDir}/${file.name}`, `${toDir}/${file.name}`);
         }
       });
     }

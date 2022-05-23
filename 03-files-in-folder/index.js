@@ -15,7 +15,7 @@ fs.readdir(path.resolve(__dirname, 'secret-folder'), (err, files) => {
         }
         else {
           if (stats.isFile()) {
-            console.log(`${filename} - ${fileext} - ${stats.size}byte`);
+            console.log(`${filename} - ${fileext} - ${stats.size} bytes`);
           }
         }
       });

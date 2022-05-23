@@ -1,43 +1,39 @@
 const fs = require('fs');
 const path = require('path');
 
-fs.mkdir(path.resolve(__dirname, 'files-copy'), { recursive: true }, (err) => {
-  if (err) {
-    console.error(err);
-  }
-});
+async function copyDir () {
+  await fs.promises.rm(path.resolve(__dirname, 'files-copy'), { recursive: true, force: true });
 
-let arrFiles;
+  checkCopying ('files', 'files-copy');
 
-fs.readdir(path.resolve(__dirname, 'files'), (err, files) => {
-  if (err)
-    console.log(err);
-  else {
-    arrFiles = files;
-    files.forEach(file => {
+  async function checkCopying (initial, resulting) {
 
-      fs.copyFile(path.resolve(__dirname, `files/${file}`), path.resolve(__dirname, `files-copy/${file}`), (err) => {
-        if (err) {
-          console.error(err);
-        }
-      });
+    await fs.promises.mkdir(path.resolve(__dirname, resulting), { recursive: true });
 
-    });
-  }
-});
+    fs.readdir(path.resolve(__dirname, initial), {withFileTypes: true}, (err, files) => {
+      if (err)
+        console.log(err);
+      else {
 
-fs.readdir(path.resolve(__dirname, 'files-copy'), (err, files) => {
-  if (err) {
-    console.log(err);
-  } else {
-    files.forEach(file => {
-      if (!arrFiles.includes(file)) {
-        fs.unlink(path.resolve(__dirname, `files-copy/${file}`), function(err){
-          if (err) {
-            console.log(err);
+        files.forEach(file => {  
+          if (!file.isDirectory()) {
+            fs.copyFile(path.resolve(__dirname, initial, file.name), path.resolve(__dirname, resulting, file.name), (err) => {
+              if (err) {
+                console.error(err);
+              }
+            });
+          } else {
+            checkCopying (`${initial}/${file.name}`, `${resulting}/${file.name}`);
           }
         });
       }
     });
   }
-});
+
+}
+
+copyDir ();
+
+ 
+
+

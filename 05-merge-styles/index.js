@@ -3,7 +3,7 @@ const path = require('path');
 
 const outputStream = fs.createWriteStream(path.resolve(__dirname, 'project-dist/bundle.css'));
 
-fs.readdir(path.resolve(__dirname, 'styles'), {withFileTypes: true}, (err, files) => {
+fs.readdir(path.resolve(__dirname, 'styles'), { withFileTypes: true }, (err, files) => {
   if (err) {
     console.log(err);
   } else {
